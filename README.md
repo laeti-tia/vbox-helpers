@@ -6,6 +6,8 @@ A collection of bash scripts to help with managing VirtualBox guests through the
 
 Usage
 -----
+The provided scripts need to be run as the user owning the VM.
+
 Most of these scripts assume you have VirtualBox and zfs installed and in your path.  ZFS is used to create ZVOL that act as raw devices to be used as VM disks.
 
 See documentation within each script for more information.

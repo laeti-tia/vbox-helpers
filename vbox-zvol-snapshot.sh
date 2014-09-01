@@ -1,8 +1,9 @@
 #!/usr/local/bin/bash
 # This script creates a new ZFS ZVOL snapshot for an existing VM
-# It needs to be run as the user owning the VM.
-# The following permissions also need to be set on the ZVOL (or its hierarchy):
-#      clone,create,mount,snapshot,destroy,rename,rollback
+# See the README.md file for general documentation
+#
+# This script takes one argument:
+#  - the VM name, with an optional path prefix
 
 ### Constants
 # The zfs mount point where are stored the ZVOLs
@@ -35,21 +36,21 @@ fi
 
 # Rotate existing snapshot and take a new one
 # TODO: add the possibilty to use other snapshot names
-zfs destroy $zvol_path$VM_path@Previous
+zfs destroy $zvol_path$VM_path@$prev
 if [ $? -ne 0 ]; then
-    echo -e "\033[38;5;214mSomething went wrong trying to destroy \033[38;5;12m$zvol_path$VM_path@Previous\033[0m"
+    echo -e "\033[38;5;214mSomething went wrong trying to destroy \033[38;5;12m$zvol_path$VM_path@$prev\033[0m"
     echo "I continue anyway, but something might go wrong later."
 fi
-zfs rename $zvol_path$VM_path@Clean $zvol_path$VM_path@Previous
+zfs rename $zvol_path$VM_path@$curr $zvol_path$VM_path@$prev
 if [ $? -ne 0 ]; then
-    echo -e "\033[31mSomething went wrong trying to rename \033[38;5;12m$zvol_path$VM_pathi@Clean to $zvol_path$VM_pathi@Previous\033[0m"
+    echo -e "\033[31mSomething went wrong trying to rename \033[38;5;12m$zvol_path$VM_path@$curr to $zvol_path$VM_path@$prev\033[0m"
     echo "I quit!"
     exit
 fi
-zfs snapshot $zvol_path$VM_path@Clean
+zfs snapshot $zvol_path$VM_path@$curr
 if [ $? -ne 0 ]; then
-    echo -e "\033[31mSomething went wrong trying to create \033[38;5;12m$zvol_path$VM_path@Clean\033[0m"
+    echo -e "\033[31mSomething went wrong trying to create \033[38;5;12m$zvol_path$VM_path@$curr\033[0m"
 else
-    echo -e "We took a new snapshot of \033[1m$VM\033[0m at \033[38;5;12m$zvol_path$VM_path@Clean\033[0m and rotated the previous one at \033[38;5;12m$zvol_path$VM_path@Previous\033[0m"
+    echo -e "We took a new snapshot of \033[1m$VM\033[0m at \033[38;5;12m$zvol_path$VM_path@$curr\033[0m and rotated the previous one at \033[38;5;12m$zvol_path$VM_path@$prev\033[0m"
 fi
 
