@@ -12,7 +12,11 @@ curr='Clean'
 prev='Previous'
 
 ### User supplied variables
-# The full VM path, it can take subdirectories under $zvol_path
+# $1: the full VM path, it can take subdirectories under $zvol_path
+if [ -z $1 ]; then
+    echo -e "\033[31mPlease provide a VM name/path to make a snapshot.\033[0m"
+    exit 1
+fi
 VM_path=$1
 VM=${VM_path/*\//}
 
@@ -21,17 +25,17 @@ echo -e "We're going to rotate the \033[38;5;12m@$curr\033[0m snapshot of \033[3
 VBoxManage showvminfo $VM > /dev/null
 if [ $? -ne 0 ]; then
     echo -e "\033[31mThe VM \033[38;5;12m$VM\033[0;31m doesn't seem to be existing.\033[0m"
-    exit
+    exit 1
 fi
 zfs list $zvol_path$VM_path > /dev/null
 if [ $? -ne 0 ]; then
     echo -e "\033[31mThe VM \033[38;5;12m$VM\033[0;31m doesn't seem to have ZVOL disks at \033[38;5;12m$VM_path\033[0m"
-    exit
+    exit 1
 fi
 VBoxManage list runningvms | grep $VM > /dev/null
 if [ $? -eq 0 ]; then
     echo -e "\033[31mThe VM \033[38;5;12m$VM\033[0;31m seems to be running, it is not recommended I take a ZVOL snapshot now.\033[0m"
-    exit
+    exit 1
 fi
 
 # Rotate existing snapshot and take a new one
@@ -45,7 +49,7 @@ zfs rename $zvol_path$VM_path@$curr $zvol_path$VM_path@$prev
 if [ $? -ne 0 ]; then
     echo -e "\033[31mSomething went wrong trying to rename \033[38;5;12m$zvol_path$VM_path@$curr to $zvol_path$VM_path@$prev\033[0m"
     echo "I quit!"
-    exit
+    exit 1
 fi
 zfs snapshot $zvol_path$VM_path@$curr
 if [ $? -ne 0 ]; then
