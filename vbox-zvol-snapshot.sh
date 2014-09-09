@@ -8,6 +8,7 @@
 ### Constants
 # The zfs mount point where are stored the ZVOLs
 zvol_path='tank/vm/disks/'
+# TODO: add the possibilty to use other snapshot names
 curr='Clean'
 prev='Previous'
 
@@ -39,11 +40,14 @@ if [ $? -eq 0 ]; then
 fi
 
 # Rotate existing snapshot and take a new one
-# TODO: add the possibilty to use other snapshot names
-zfs destroy $zvol_path$VM_path@$prev
-if [ $? -ne 0 ]; then
-    echo -e "\033[38;5;214mSomething went wrong trying to destroy \033[38;5;12m$zvol_path$VM_path@$prev\033[0m"
-    echo "I continue anyway, but something might go wrong later."
+zfs list $zvol_path$VM_path@$prev > /dev/null 2> /dev/null
+if [ $? -eq 0 ]; then
+    # We have an existing $prev snapshot, we'll delete it
+    zfs destroy $zvol_path$VM_path@$prev
+    if [ $? -ne 0 ]; then
+        echo -e "\033[38;5;214mSomething went wrong trying to destroy \033[38;5;12m$zvol_path$VM_path@$prev\033[0m"
+        exit 1
+    fi
 fi
 zfs rename $zvol_path$VM_path@$curr $zvol_path$VM_path@$prev
 if [ $? -ne 0 ]; then
