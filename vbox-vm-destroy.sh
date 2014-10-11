@@ -54,7 +54,7 @@ fi
 # Delete VM
 VBoxManage unregistervm $VM --delete
 if [ $? -ne 0 ]; then
-    echo -e "\033[31mThere was an error trying to delete the VM \033[38;5;12m$VM\033[0;31m."
+    echo -e "\033[31mThere was an error trying to delete the VM \033[38;5;12m$VM\033[0m."
     echo -e "It's better I stop here."
     exit 1
 fi
@@ -62,7 +62,7 @@ fi
 # Destroy ZVOL and associated snapshots
 zfs destroy -rv $zfs_pool$VM_path
 if [ $? -eq 0 ]; then
-    echo -e "\033[38;5;12m${VM}\033[0m was deleted and its disk destroyed."
+    echo -e "\033[38;5;12m${VM}\033[0m was deleted and its disk is destroyed."
 else
     echo -e "\033[31mSomething went wrong trying to destroy \033[38;5;12m$zfs_pool$VM_path\033[0m"
     echo -e "But the VM \033[38;5;12m$VM\033[0;31m is deleted."

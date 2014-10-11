@@ -3,8 +3,9 @@
 # Clone an existing VM with disks on ZVOL
 # See the README.md file for general documentation
 #
-# This script takes one argument:
-#  - the VM name, with an optional path prefix
+# This script takes two arguments:
+#  - the VM name to be cloned, with an optional path prefix
+#  - the name of the new VM
 
 ### Constants
 zvol_root='/dev/zvol/'
@@ -67,15 +68,18 @@ fi
 # 1. We clone the ZVOL and take a initial snapshot
 zfs clone ${zfs_pool}${VM_path}@${curr} ${zfs_pool}${new_VM_path}
 if [ $? -ne 0 ]; then
-    echo -e "\033[31mThere was a problem when cloning \033[38;5;12m$VM_path@$curr\033[31m to \033[38;5;12m$new_VM_path@$curr\033[0m"
+    echo -e "\033[31mThere was a problem when cloning \033[38;5;12m$VM_path@$curr\033[31m to \033[38;5;12m$new_VM_path\033[0m"
     exit 1
 fi
 zfs snapshot ${zfs_pool}${new_VM_path}@${curr}
+if [ $? -ne 0 ]; then
+    echo -e "\033[31mThere was a problem when taking snapshot \033[38;5;12m$new_VM_path@$curr\033[0m"
+    exit 1
+fi
 
 # 2. We clone the VM and remove any associated disk
 VBoxManage clonevm $VM --snapshot $tbc --mode machine --options link --name $new_VM --groups $new_VM_group --register
 vmdk_snap=`VBoxManage list hdds | awk "/\/${new_VM}\/Snapshots\// {print \\$2}"`
-echo $vmdk_snap
 VBoxManage storageattach $new_VM --storagectl SATA --port 0 --medium none
 VBoxManage closemedium disk "$vmdk_snap" --delete
 
