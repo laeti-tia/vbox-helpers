@@ -4,6 +4,11 @@
 #
 # This script takes one argument:
 #  - the VM name, with an optional path prefix
+#
+# Caution!
+# Never mix zfs snapshots and VirtualBox snapshots!
+# The VM snapshot we use here is only to help with the VirtualBox clone command
+# It is to be deleted and recreated every time we take a ZFS snapshot
 
 ### Constants
 # The zfs mount point where are stored the ZVOLs
@@ -11,6 +16,9 @@ zvol_path='tank/vm/disks/'
 # TODO: add the possibilty to use other snapshot names
 curr='Clean'
 prev='Previous'
+# VM snapshot to be cloned
+tbc='ToBeCloned'
+tbc_desc='Snapshot to be cloned with the vbox-zvol-snapshot.sh script.'
 
 ### User supplied variables
 # $1: the full VM path, it can take subdirectories under $zvol_path
@@ -38,6 +46,18 @@ if [ $? -eq 0 ]; then
     echo -e "\033[31mThe VM \033[38;5;12m$VM\033[0;31m seems to be running, it is not recommended I take a ZVOL snapshot now.\033[0m"
     exit 1
 fi
+
+# If we have a VirtualBox snapshot, we must delete it and then recreate it
+VBoxManage snapshot $VM list | grep ${tbc} > /dev/null 2> /dev/null
+if [ $? -eq 0 ]; then
+    VBoxManage snapshot $VM delete ${tbc}
+    if [ $? -ne 0 ]; then
+        echo -e "\033[38;5;214mSomething went wrong trying to delete \033[38;5;12m${tbc} snapshot\033[0m"
+        exit 1
+    fi
+fi
+echo -e "We take a new \033[38;5;12m${tbc}\033[0m VirtualBox snapshot."
+VBoxManage snapshot $VM take ${tbc} --description "${tbc_desc}"
 
 # Rotate existing snapshot and take a new one
 zfs list $zvol_path$VM_path@$prev > /dev/null 2> /dev/null

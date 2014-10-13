@@ -6,6 +6,11 @@
 # This script takes two arguments:
 #  - the VM name to be cloned, with an optional path prefix
 #  - the name of the new VM
+#
+# Caution!
+# Never mix zfs snapshots and VirtualBox snapshots!
+# The VM snapshot we use here is only to help with the VirtualBox clone command
+# It is to be deleted and recreated every time we take a ZFS snapshot
 
 ### Constants
 zvol_root='/dev/zvol/'
