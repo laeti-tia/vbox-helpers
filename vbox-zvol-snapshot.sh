@@ -47,17 +47,13 @@ if [ $? -eq 0 ]; then
     exit 1
 fi
 
-# If we have a VirtualBox snapshot, we must delete it and then recreate it
-VBoxManage snapshot $VM list | grep ${tbc} > /dev/null 2> /dev/null
-if [ $? -eq 0 ]; then
-    VBoxManage snapshot $VM delete ${tbc}
-    if [ $? -ne 0 ]; then
-        echo -e "\033[38;5;214mSomething went wrong trying to delete \033[38;5;12m${tbc} snapshot\033[0m"
-        exit 1
-    fi
+# If we have a VirtualBox snapshot, we probably shouldn't take a ZFS snapshot
+VBoxManage snapshot $VM list | grep 'This machine does not have any snapshots'
+if [ $? -ne 0 ]; then
+    echo -e "\033[38;5;214mThe $VM VM has some snapshots, you shouldn't be mixing those with ZFS snapshots.\033[0m"
+    echo -e "Better I quit here."
+    exit 1
 fi
-echo -e "We take a new \033[38;5;12m${tbc}\033[0m VirtualBox snapshot."
-VBoxManage snapshot $VM take ${tbc} --description "${tbc_desc}"
 
 # Rotate existing snapshot and take a new one
 zfs list $zvol_path$VM_path@$prev > /dev/null 2> /dev/null

@@ -10,7 +10,7 @@
 # Caution!
 # Never mix zfs snapshots and VirtualBox snapshots!
 # The VM snapshot we use here is only to help with the VirtualBox clone command
-# It is to be deleted and recreated every time we take a ZFS snapshot
+# It is to be deleted and recreated every time we clone the VM
 
 ### Constants
 zvol_root='/dev/zvol/'
@@ -82,7 +82,13 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# 2. We clone the VM and remove any associated disk
+# 2. We take a snapshot and clone the VM, then remove any associated disk
+VBoxManage snapshot $VM take ${tbc}
+if [ $? -ne 0 ]; then
+    echo -e "\033[38;5;214mSomething went wrong trying to take a \033[38;5;12m${tbc} snapshot on $VM\033[0m"
+    echo -e "The VM was not cloned, but its disk were cloned.  You might need to delete these manually."
+    exit 1
+fi
 VBoxManage clonevm $VM --snapshot $tbc --mode machine --options link --name $new_VM --groups $new_VM_group --register
 vmdk_snap=`VBoxManage list hdds | awk "/\/${new_VM}\/Snapshots\// {print \\$2}"`
 VBoxManage storageattach $new_VM --storagectl SATA --port 0 --medium none
@@ -91,8 +97,12 @@ VBoxManage closemedium disk "$vmdk_snap" --delete
 # 3. We create a new VMDK
 VBoxManage internalcommands createrawvmdk -filename ${vbox_root}${new_VM_path}/${new_VM}.vmdk -rawdisk ${zvol_root}${zfs_pool}${new_VM_path}
 
-# 4. We attach the VMDK to the newly created VM
+# 4. We attach the VMDK to the newly created VM and we can delete the VM snapshot
 VBoxManage storageattach $new_VM --storagectl SATA --port 0 --type hdd --medium ${vbox_root}${new_VM_path}/${new_VM}.vmdk
+VBoxManage snapshot $VM delete ${tbc}
+if [ $? -ne 0 ]; then
+    echo -e "\033[38;5;214mSomething went wrong trying to delete \033[38;5;12m${tbc} snapshot\033[0m"
+fi
 
 echo -e "\033[38;5;12m${new_VM}\033[0m was created with its disk as \033[38;5;12m${zvol_root}${zfs_pool}${new_VM_path}\033[0m"
 
