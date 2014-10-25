@@ -41,14 +41,14 @@ if [ $? -ne 0 ]; then
     echo -e "\033[31mThe VM \033[38;5;12m$VM\033[0;31m doesn't seem to have ZVOL disks at \033[38;5;12m$VM_path\033[0m"
     exit 1
 fi
-VBoxManage list runningvms | grep $VM > /dev/null
+VBoxManage list runningvms | grep "\"$VM\"" > /dev/null
 if [ $? -eq 0 ]; then
     echo -e "\033[31mThe VM \033[38;5;12m$VM\033[0;31m seems to be running, it is not recommended I take a ZVOL snapshot now.\033[0m"
     exit 1
 fi
 
 # If we have a VirtualBox snapshot, we probably shouldn't take a ZFS snapshot
-VBoxManage snapshot $VM list | grep 'This machine does not have any snapshots'
+VBoxManage snapshot $VM list | grep 'This machine does not have any snapshots' > /dev/null
 if [ $? -ne 0 ]; then
     echo -e "\033[38;5;214mThe $VM VM has some snapshots, you shouldn't be mixing those with ZFS snapshots.\033[0m"
     echo -e "Better I quit here."
