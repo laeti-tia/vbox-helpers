@@ -18,7 +18,7 @@ prev='Previous'
 ### User supplied variables
 # $1: the full VM path, it can take subdirectories under $zvol_path
 if [ -z $1 ]; then
-    echo -e "\033[31mPlease provide a VM name/path to make a snapshot.\033[0m"
+    echo -e "\033[31mPlease provide a VM name/path to destroy.\033[0m"
     exit 1
 fi
 VM_path=$1
