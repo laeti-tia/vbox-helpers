@@ -17,7 +17,7 @@ Prerequisite
 ------------
 For the ZVOL commands to work for the VM owner, this user (or the `vboxusers` group in FreeBSD, for example) need to have access to some zfs management commands.  Usually you can allow that with the following command (provided `tank/vm/disks` is the root of the ZVOL hierarchy):
 
-    zfs allow -g vboxusers clone,snapshot,destroy,rename,rollback tank/vm/disks
+    zfs allow -g vboxusers clone,create,destroy,mount,rename,rollback,snapshot tank/vm/disks
 
 
 Compatibility
