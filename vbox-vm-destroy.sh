@@ -61,7 +61,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 # Remove remaining directory if any
-rmdir $vbox_root$VM_path
+rmdir $vbox_root$VM_path 2>/dev/null
 
 # Destroy ZVOL and associated snapshots
 zfs destroy -rv $zfs_pool$VM_path

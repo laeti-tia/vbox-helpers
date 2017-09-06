@@ -111,13 +111,13 @@ if ! VBoxManage storagectl $VM --name SATA --add sata --hostiocache on; then
 fi
 
 # Add ZVOL to VM
-if ! VBoxManage internalcommands createrawvmdk -filename $VM_path/$VM.vmdk -rawdisk $zvol_root$zfs_pool$VM_path; then
-    echo -e "\033[31mThere was an error trying to create the ZVOL VMDK file at \033[38;5;12m$VM_path/$VM.vmdk\033[0m."
+if ! VBoxManage internalcommands createrawvmdk -filename $vbox_root$VM_path/$VM.vmdk -rawdisk $zvol_root$zfs_pool$VM_path; then
+    echo -e "\033[31mThere was an error trying to create the ZVOL VMDK file at \033[38;5;12m$vbox_root$VM_path/$VM.vmdk\033[0m."
     echo -e "It's better I stop here. Check the ZVOL and VM and delete or correct as needed."
     exit 1
 fi
-if ! VBoxManage storageattach $VM --storagectl SATA --port 0 --type hdd --medium $VM_path/$VM.vmdk; then
-    echo -e "\033[31mThere was an error trying to attach the ZVOL VMDK file from \033[38;5;12m$VM_path/$VM.vmdk\033[0m."
+if ! VBoxManage storageattach $VM --storagectl SATA --port 0 --type hdd --medium $vbox_root$VM_path/$VM.vmdk; then
+    echo -e "\033[31mThere was an error trying to attach the ZVOL VMDK file from \033[38;5;12m$vbox_root$VM_path/$VM.vmdk\033[0m."
     echo -e "It's better I stop here. Check the ZVOL and VM and delete or correct if needed."
     exit 1
 fi
