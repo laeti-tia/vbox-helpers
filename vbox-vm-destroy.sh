@@ -11,6 +11,8 @@
 zvol_path='tank/vm/disks/'
 # The zfs pool where are stored the ZVOLs
 zfs_pool='tank/vm/disks/'
+# VirtualBox VM root
+vbox_root='/tank/vm/'
 # TODO: add the possibilty to use other snapshot names
 curr='Clean'
 prev='Previous'
@@ -58,6 +60,8 @@ if [ $? -ne 0 ]; then
     echo -e "It's better I stop here."
     exit 1
 fi
+# Remove remaining directory if any
+rmdir $vbox_root$VM_path
 
 # Destroy ZVOL and associated snapshots
 zfs destroy -rv $zfs_pool$VM_path
